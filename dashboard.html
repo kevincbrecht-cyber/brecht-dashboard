@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brecht Family Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:    #0D1F35;
+    --navy-md: #1B3A5C;
+    --navy-lt: #2460A0;
+    --gold:    #C8922A;
+    --gold-lt: #E8B84B;
+    --cream:   #F8F4EE;
+    --white:   #FFFFFF;
+    --muted:   rgba(255,255,255,0.55);
+    --border:  rgba(255,255,255,0.10);
+    --card-bg: rgba(255,255,255,0.06);
+    --card-border: rgba(200,146,42,0.25);
+
+    /* Person colors */
+    --kevin:   #4A9ECD;
+    --emily:   #27AE60;
+    --addison: #9B59B6;
+    --jonas:   #E67E22;
+    --maci:    #16A085;
+    --roman:   #E74C3C;
+    --piper:   #F39C12;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .dashboard {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 1fr;
+    height: 100vh;
+    padding: 18px 22px 14px;
+    gap: 14px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-left { display: flex; flex-direction: column; gap: 2px; }
+  .family-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold-lt);
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .header-date {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .clock-block {
+    text-align: center;
+  }
+  .clock {
+    font-family: 'Playfair Display', serif;
+    font-size: 54px;
+    font-weight: 400;
+    color: var(--white);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .clock-ampm {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .weather-block {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  .weather-temp {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    color: var(--gold-lt);
+    line-height: 1;
+  }
+  .weather-desc {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .weather-detail {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── GOLD DIVIDER ── */
+  .gold-rule {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+    opacity: 0.5;
+  }
+
+  /* ── MAIN GRID ── */
+  .main {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 14px;
+    min-height: 0;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+  }
+  .card-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .card-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  /* ── CALENDAR ── */
+  .event-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .event-row:last-child { border-bottom: none; }
+  .event-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .event-time {
+    font-size: 11px;
+    color: var(--muted);
+    width: 68px;
+    flex-shrink: 0;
+    padding-top: 1px;
+  }
+  .event-name {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--white);
+  }
+  .event-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .no-events {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 8px 0;
+  }
+
+  /* ── MEAL + SHOPPING ── */
+  .meal-tonight {
+    background: rgba(200,146,42,0.12);
+    border: 1px solid rgba(200,146,42,0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+    flex-shrink: 0;
+  }
+  .meal-label {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 3px;
+  }
+  .meal-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--white);
+    line-height: 1.1;
+  }
+  .meal-note {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .shopping-list { flex: 1; overflow: hidden; }
+  .shopping-title {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .shop-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--white);
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .shop-item:last-child { border-bottom: none; }
+  .shop-store {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 10px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+  .shop-costco { background: rgba(255,0,0,0.2); color: #FF8080; }
+  .shop-kroger { background: rgba(39,174,96,0.2); color: #7FD4A8; }
+  .shop-sams { background: rgba(74,158,205,0.2); color: #7FC8E8; }
+
+  /* ── SCRIPTURE ── */
+  .scripture-card {
+    background: linear-gradient(135deg, rgba(200,146,42,0.15), rgba(13,31,53,0.3));
+    border: 1px solid rgba(200,146,42,0.35);
+  }
+  .scripture-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--white);
+    font-style: italic;
+    flex: 1;
+  }
+  .scripture-ref {
+    font-size: 10px;
+    color: var(--gold);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+  }
+  .footer-motto {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    letter-spacing: 0.03em;
+  }
+  .footer-motto span { color: var(--gold); font-style: normal; font-weight: 600; }
+  .last-updated {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    text-align: right;
+  }
+
+  /* ── PERSON COLOR MAP ── */
+  .person-kevin   { background: var(--kevin); }
+  .person-emily   { background: var(--emily); }
+  .person-addison { background: var(--addison); }
+  .person-jonas   { background: var(--jonas); }
+  .person-maci    { background: var(--maci); }
+  .person-roman   { background: var(--roman); }
+  .person-piper   { background: var(--piper); }
+  .person-family  { background: var(--gold); }
+  .person-default { background: #888; }
+
+  /* Loading state */
+  .loading { color: var(--muted); font-size: 12px; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="family-name">The Brecht Family</div>
+      <div class="header-date" id="header-date">Loading...</div>
+    </div>
+    <div class="clock-block">
+      <div class="clock" id="clock">--:--</div>
+      <div class="clock-ampm" id="clock-ampm">--</div>
+    </div>
+    <div class="weather-block" id="weather-block">
+      <div class="weather-temp" id="weather-temp">--°</div>
+      <div class="weather-desc" id="weather-desc">Loading...</div>
+      <div class="weather-detail" id="weather-detail"></div>
+    </div>
+  </div>
+
+  <div class="gold-rule"></div>
+
+  <!-- MAIN GRID -->
+  <div class="main">
+
+    <!-- CALENDAR -->
+    <div class="card">
+      <div class="card-title">Today's Schedule</div>
+      <div class="card-body" id="calendar-body">
+        <div class="loading">Loading events...</div>
+      </div>
+    </div>
+
+    <!-- MEAL + SHOPPING -->
+    <div class="card">
+      <div class="card-title">Dinner Tonight</div>
+      <div class="meal-tonight">
+        <div class="meal-label">On the menu</div>
+        <div class="meal-name" id="meal-name">Loading...</div>
+        <div class="meal-note" id="meal-note"></div>
+      </div>
+      <div class="shopping-list">
+        <div class="shopping-title">Shopping This Week</div>
+        <div id="shopping-body">
+          <div class="loading">No items added</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCRIPTURE -->
+    <div class="card scripture-card">
+      <div class="card-title">Daily Scripture — NLT</div>
+      <div class="card-body">
+        <div class="scripture-text" id="scripture-text">Loading today's verse...</div>
+        <div class="scripture-ref" id="scripture-ref"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="gold-rule"></div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-motto">
+      <span>The Brecht Standard:</span> We don't do half the job. We don't wait to be asked twice. We take care of each other.
+    </div>
+    <div class="last-updated" id="last-updated"></div>
+  </div>
+
+</div>
+
+<script>
+// ── CALENDAR ID ──────────────────────────────────────────────────────────────
+const CAL_ID = "c7b135637ea04a4c07405302ca68b2402c2d0b088190cbed5c3e73cc10c4a517@group.calendar.google.com";
+const CAL_KEY = "AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY"; // Public API key for calendar read
+
+// Person color mapping
+const PERSON_COLORS = {
+  kevin: '#4A9ECD', emily: '#27AE60', addison: '#9B59B6',
+  jonas: '#E67E22', maci: '#16A085', roman: '#E74C3C',
+  piper: '#F39C12', family: '#C8922A'
+};
+
+function getPersonColor(summary) {
+  const s = (summary || '').toLowerCase();
+  if (s.includes('kevin')) return PERSON_COLORS.kevin;
+  if (s.includes('emily')) return PERSON_COLORS.emily;
+  if (s.includes('addison')) return PERSON_COLORS.addison;
+  if (s.includes('jonas')) return PERSON_COLORS.jonas;
+  if (s.includes('maci')) return PERSON_COLORS.maci;
+  if (s.includes('roman')) return PERSON_COLORS.roman;
+  if (s.includes('piper')) return PERSON_COLORS.piper;
+  if (s.includes('swim') || s.includes('cheer') || s.includes('lions') || s.includes('fiesta')) return PERSON_COLORS.family;
+  return '#888888';
+}
+
+// ── CLOCK ────────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  let h = now.getHours();
+  const m = now.getMinutes().toString().padStart(2,'0');
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  document.getElementById('clock').textContent = h + ':' + m;
+  document.getElementById('clock-ampm').textContent = ampm;
+
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('header-date').textContent =
+    days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── WEATHER (Open-Meteo — no API key needed) ──────────────────────────────────
+async function fetchWeather() {
+  try {
+    // Lambertville, MI coordinates
+    const lat = 41.7736, lon = -83.6274;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m&temperature_unit=fahrenheit&windspeed_unit=mph`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const cur = data.current;
+    const temp = Math.round(cur.temperature_2m);
+    const code = cur.weathercode;
+    const wind = Math.round(cur.windspeed_10m);
+    const hum  = cur.relative_humidity_2m;
+
+    const desc = weatherDesc(code);
+    document.getElementById('weather-temp').textContent = temp + '°F';
+    document.getElementById('weather-desc').textContent = desc;
+    document.getElementById('weather-detail').textContent = `Wind ${wind} mph · Humidity ${hum}%`;
+  } catch(e) {
+    document.getElementById('weather-desc').textContent = 'Weather unavailable';
+  }
+}
+
+function weatherDesc(code) {
+  if (code === 0) return 'Clear Sky';
+  if (code <= 2) return 'Partly Cloudy';
+  if (code === 3) return 'Overcast';
+  if (code <= 49) return 'Foggy';
+  if (code <= 59) return 'Drizzle';
+  if (code <= 69) return 'Rain';
+  if (code <= 79) return 'Snow';
+  if (code <= 82) return 'Rain Showers';
+  if (code <= 86) return 'Snow Showers';
+  if (code >= 95) return 'Thunderstorm';
+  return 'Variable';
+}
+
+fetchWeather();
+setInterval(fetchWeather, 10 * 60 * 1000); // refresh every 10 min
+
+// ── CALENDAR ─────────────────────────────────────────────────────────────────
+async function fetchCalendar() {
+  try {
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const endOfDay   = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    const tMin = startOfDay.toISOString();
+    const tMax = endOfDay.toISOString();
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CAL_ID)}/events?key=${CAL_KEY}&timeMin=${tMin}&timeMax=${tMax}&singleEvents=true&orderBy=startTime&maxResults=20`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const events = data.items || [];
+
+    const body = document.getElementById('calendar-body');
+    if (!events.length) {
+      body.innerHTML = '<div class="no-events">Nothing scheduled today — enjoy the day!</div>';
+      return;
+    }
+
+    body.innerHTML = events.map(ev => {
+      const sum = ev.summary || 'Event';
+      const color = getPersonColor(sum);
+      let timeStr = 'All day';
+      if (ev.start && ev.start.dateTime) {
+        const d = new Date(ev.start.dateTime);
+        let h = d.getHours(), m = d.getMinutes().toString().padStart(2,'0');
+        const ap = h >= 12 ? 'pm' : 'am';
+        h = h % 12 || 12;
+        timeStr = h + ':' + m + ' ' + ap;
+      }
+      const loc = ev.location ? `<div class="event-sub">${ev.location.split(',')[0]}</div>` : '';
+      return `<div class="event-row">
+        <div class="event-dot" style="background:${color}"></div>
+        <div class="event-time">${timeStr}</div>
+        <div>
+          <div class="event-name">${sum}</div>
+          ${loc}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('calendar-body').innerHTML =
+      '<div class="loading">Calendar unavailable — check connection</div>';
+  }
+}
+
+fetchCalendar();
+setInterval(fetchCalendar, 5 * 60 * 1000); // refresh every 5 min
+
+// ── SCRIPTURE (rotating NLT verses) ──────────────────────────────────────────
+const SCRIPTURES = [
+  { text: "Trust in the Lord with all your heart; do not depend on your own understanding. Seek his will in all you do, and he will show you which path to take.", ref: "Proverbs 3:5-6 NLT" },
+  { text: "For I know the plans I have for you, says the Lord. They are plans for good and not for disaster, to give you a future and a hope.", ref: "Jeremiah 29:11 NLT" },
+  { text: "Don't be afraid, for I am with you. Don't be discouraged, for I am your God. I will strengthen you and help you.", ref: "Isaiah 41:10 NLT" },
+  { text: "And we know that God causes everything to work together for the good of those who love God and are called according to his purpose for them.", ref: "Romans 8:28 NLT" },
+  { text: "Love is patient and kind. Love is not jealous or boastful or proud or rude. It does not demand its own way.", ref: "1 Corinthians 13:4-5 NLT" },
+  { text: "I can do everything through Christ, who gives me strength.", ref: "Philippians 4:13 NLT" },
+  { text: "Be strong and courageous! Do not be afraid or discouraged. For the Lord your God is with you wherever you go.", ref: "Joshua 1:9 NLT" },
+  { text: "Give all your worries and cares to God, for he cares about you.", ref: "1 Peter 5:7 NLT" },
+  { text: "Children are a gift from the Lord; they are a reward from him.", ref: "Psalm 127:3 NLT" },
+  { text: "Direct your children onto the right path, and when they are older, they will not leave it.", ref: "Proverbs 22:6 NLT" },
+  { text: "A cheerful heart is good medicine, but a broken spirit saps a person's strength.", ref: "Proverbs 17:22 NLT" },
+  { text: "No, despite all these things, overwhelming victory is ours through Christ, who loved us.", ref: "Romans 8:37 NLT" },
+  { text: "The Lord is my shepherd; I have all that I need.", ref: "Psalm 23:1 NLT" },
+  { text: "Commit your actions to the Lord, and your plans will succeed.", ref: "Proverbs 16:3 NLT" },
+  { text: "The Lord your God is living among you. He is a mighty savior. He will take delight in you with gladness.", ref: "Zephaniah 3:17 NLT" },
+  { text: "And now, dear brothers and sisters, one final thing. Fix your thoughts on what is true, and honorable, and right, and pure, and lovely, and admirable.", ref: "Philippians 4:8 NLT" },
+  { text: "So be strong and courageous, all you who put your hope in the Lord!", ref: "Psalm 31:24 NLT" },
+  { text: "Seek the Kingdom of God above all else, and live righteously, and he will give you everything you need.", ref: "Matthew 6:33 NLT" },
+  { text: "Taste and see that the Lord is good. Oh, the joys of those who take refuge in him!", ref: "Psalm 34:8 NLT" },
+  { text: "For the Lord your God is the one who goes with you to fight for you against your enemies to give you victory.", ref: "Deuteronomy 20:4 NLT" },
+  { text: "Work willingly at whatever you do, as though you were working for the Lord rather than for people.", ref: "Colossians 3:23 NLT" },
+  { text: "So do not throw away this confident trust in the Lord. Remember the great reward it brings you!", ref: "Hebrews 10:35 NLT" },
+  { text: "Even when I walk through the darkest valley, I will not be afraid, for you are close beside me.", ref: "Psalm 23:4 NLT" },
+  { text: "The Lord himself will fight for you. Just stay calm.", ref: "Exodus 14:14 NLT" },
+  { text: "Don't worry about anything; instead, pray about everything. Tell God what you need, and thank him for all he has done.", ref: "Philippians 4:6 NLT" },
+  { text: "Above all else, guard your heart, for everything you do flows from it.", ref: "Proverbs 4:23 NLT" },
+  { text: "Let all that I am praise the Lord; may I never forget the good things he does for me.", ref: "Psalm 103:2 NLT" },
+  { text: "This is my command — be strong and courageous! Do not be afraid or discouraged.", ref: "Joshua 1:9 NLT" },
+  { text: "God is our refuge and strength, always ready to help in times of trouble.", ref: "Psalm 46:1 NLT" },
+  { text: "For the Spirit God gave us does not make us timid, but gives us power, love and self-discipline.", ref: "2 Timothy 1:7 NLT" },
+  { text: "He gives power to the weak and strength to the powerless.", ref: "Isaiah 40:29 NLT" },
+  { text: "The Lord makes firm the steps of the one who delights in him.", ref: "Psalm 37:23 NLT" },
+  { text: "We love each other because he loved us first.", ref: "1 John 4:19 NLT" },
+  { text: "Create in me a clean heart, O God. Renew a loyal spirit within me.", ref: "Psalm 51:10 NLT" },
+  { text: "As iron sharpens iron, so a friend sharpens a friend.", ref: "Proverbs 27:17 NLT" },
+  { text: "The Lord is close to the brokenhearted; he rescues those whose spirits are crushed.", ref: "Psalm 34:18 NLT" },
+  { text: "Be kind to each other, tenderhearted, forgiving one another, just as God through Christ has forgiven you.", ref: "Ephesians 4:32 NLT" },
+];
+
+function loadScripture() {
+  const today = new Date();
+  const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+  const verse = SCRIPTURES[dayOfYear % SCRIPTURES.length];
+  document.getElementById('scripture-text').textContent = '“' + verse.text + '”';
+  document.getElementById('scripture-ref').textContent = '— ' + verse.ref;
+}
+loadScripture();
+
+// ── MEAL + SHOPPING (localStorage) ───────────────────────────────────────────
+function loadMeal() {
+  const meal = localStorage.getItem('brecht_meal') || 'Not set yet';
+  const note = localStorage.getItem('brecht_meal_note') || 'Update from your phone via admin panel';
+  document.getElementById('meal-name').textContent = meal;
+  document.getElementById('meal-note').textContent = note;
+}
+
+function loadShopping() {
+  const raw = localStorage.getItem('brecht_shopping');
+  const items = raw ? JSON.parse(raw) : [];
+  const body = document.getElementById('shopping-body');
+  if (!items.length) {
+    body.innerHTML = '<div class="loading">No items — add from admin panel</div>';
+    return;
+  }
+  body.innerHTML = items.map(item => {
+    const storeClass = item.store === 'Costco' ? 'shop-costco' : item.store === 'Kroger' ? 'shop-kroger' : 'shop-sams';
+    return `<div class="shop-item">
+      <span class="shop-store ${storeClass}">${item.store}</span>
+      <span>${item.name}</span>
+    </div>`;
+  }).join('');
+}
+
+function loadLastUpdated() {
+  const ts = localStorage.getItem('brecht_last_updated');
+  if (ts) {
+    document.getElementById('last-updated').textContent = 'Updated ' + new Date(ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  }
+}
+
+loadMeal();
+loadShopping();
+loadLastUpdated();
+
+// Refresh meal/shopping every 30 seconds in case admin panel updated
+setInterval(() => { loadMeal(); loadShopping(); loadLastUpdated(); }, 30000);
+
+// ── LAST UPDATED ─────────────────────────────────────────────────────────────
+document.getElementById('last-updated').textContent = 'Lambertville, MI';
+</script>
+</body>
+</html>
