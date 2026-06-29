@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brecht Family Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:    #0D1F35;
+    --navy-md: #1B3A5C;
+    --gold:    #C8922A;
+    --gold-lt: #E8B84B;
+    --white:   #FFFFFF;
+    --muted:   rgba(255,255,255,0.55);
+    --border:  rgba(255,255,255,0.10);
+    --card-bg: rgba(255,255,255,0.06);
+    --card-bd: rgba(200,146,42,0.25);
+  }
+  html, body { width:100%; height:100%; background:var(--navy); color:var(--white); font-family:'Inter',sans-serif; overflow:hidden; }
+
+  .dashboard {
+    display: grid;
+    grid-template-rows: auto 2px 1fr 2px auto;
+    height: 100vh;
+    padding: 16px 20px 12px;
+    gap: 10px;
+  }
+
+  /* HEADER */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+  .family-name { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; color:var(--gold-lt); line-height:1; }
+  .header-date { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-top:3px; }
+  .clock { font-family:'Playfair Display',serif; font-size:52px; font-weight:400; color:var(--white); line-height:1; text-align:center; }
+  .clock-ampm { font-size:13px; color:var(--muted); text-align:center; letter-spacing:.1em; text-transform:uppercase; }
+  .weather-wrap { text-align:right; }
+  .weather-temp { font-family:'Playfair Display',serif; font-size:34px; color:var(--gold-lt); line-height:1; }
+  .weather-desc { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; margin-top:2px; }
+  .weather-detail { font-size:11px; color:var(--muted); margin-top:2px; }
+
+  /* GOLD RULES */
+  .rule { background:linear-gradient(to right, transparent, var(--gold), transparent); opacity:.45; }
+
+  /* MAIN */
+  .main {
+    display: grid;
+    grid-template-columns: 1.65fr 1fr 1fr;
+    gap: 12px;
+    min-height: 0;
+  }
+
+  /* CARDS */
+  .card { background:var(--card-bg); border:1px solid var(--card-bd); border-radius:12px; padding:13px 15px; display:flex; flex-direction:column; gap:7px; overflow:hidden; min-height:0; }
+  .card-title { font-size:9.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); padding-bottom:6px; border-bottom:1px solid var(--border); flex-shrink:0; }
+  .card-body { flex:1; overflow:hidden; display:flex; flex-direction:column; gap:4px; }
+
+  /* CALENDAR */
+  .event-row { display:flex; align-items:flex-start; gap:8px; padding:5px 0; border-bottom:1px solid var(--border); }
+  .event-row:last-child { border-bottom:none; }
+  .event-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:4px; }
+  .event-time { font-size:11px; color:var(--muted); width:64px; flex-shrink:0; padding-top:1px; }
+  .event-name { font-size:13px; font-weight:500; line-height:1.3; }
+  .event-loc { font-size:10px; color:var(--muted); margin-top:1px; }
+  .empty-msg { font-size:13px; color:var(--muted); font-style:italic; padding:8px 0; }
+
+  /* MEAL */
+  .meal-box { background:rgba(200,146,42,0.12); border:1px solid rgba(200,146,42,0.3); border-radius:8px; padding:10px 12px; flex-shrink:0; }
+  .meal-label { font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:3px; }
+  .meal-name { font-family:'Playfair Display',serif; font-size:19px; line-height:1.15; }
+  .meal-note { font-size:10px; color:var(--muted); margin-top:3px; }
+
+  /* SHOPPING */
+  .shop-title { font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin:8px 0 5px; }
+  .shop-item { display:flex; align-items:center; gap:6px; font-size:11.5px; padding:3px 0; border-bottom:1px solid var(--border); }
+  .shop-item:last-child { border-bottom:none; }
+  .shop-badge { font-size:8.5px; padding:1px 5px; border-radius:10px; font-weight:600; flex-shrink:0; }
+  .s-costco { background:rgba(255,60,60,0.2); color:#FF9090; }
+  .s-kroger { background:rgba(39,174,96,0.2); color:#7FD4A8; }
+  .s-sams   { background:rgba(74,158,205,0.2); color:#7FC8E8; }
+
+  /* SCRIPTURE */
+  .scripture-card { background:linear-gradient(135deg,rgba(200,146,42,0.14),rgba(13,31,53,0.4)); border:1px solid rgba(200,146,42,0.35); }
+  .scripture-text { font-family:'Playfair Display',serif; font-size:14.5px; line-height:1.6; font-style:italic; flex:1; overflow:hidden; }
+  .scripture-ref { font-size:10px; color:var(--gold); font-weight:600; letter-spacing:.08em; text-transform:uppercase; text-align:right; flex-shrink:0; margin-top:4px; }
+
+  /* FOOTER */
+  .footer { display:grid; grid-template-columns:1fr auto; align-items:center; gap:12px; }
+  .motto { font-size:11px; color:var(--muted); font-style:italic; }
+  .motto span { color:var(--gold); font-style:normal; font-weight:600; }
+  .updated { font-size:10px; color:rgba(255,255,255,0.25); }
+
+  .err { font-size:11px; color:#FF8080; font-style:italic; }
+</style>
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="family-name">The Brecht Family</div>
+      <div class="header-date" id="hdate"></div>
+    </div>
+    <div>
+      <div class="clock" id="clock">--:--</div>
+      <div class="clock-ampm" id="ampm">--</div>
+    </div>
+    <div class="weather-wrap">
+      <div class="weather-temp" id="wtemp">--°F</div>
+      <div class="weather-desc" id="wdesc">Loading...</div>
+      <div class="weather-detail" id="wdetail"></div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- CALENDAR -->
+    <div class="card">
+      <div class="card-title">Today's Schedule</div>
+      <div class="card-body" id="cal-body"><div class="empty-msg">Loading events...</div></div>
+    </div>
+
+    <!-- MEAL + SHOPPING -->
+    <div class="card">
+      <div class="card-title">Dinner Tonight</div>
+      <div class="meal-box">
+        <div class="meal-label">On the menu</div>
+        <div class="meal-name" id="meal-name">Not set yet</div>
+        <div class="meal-note" id="meal-note">Update via admin panel on your phone</div>
+      </div>
+      <div class="shop-title">Shopping This Week</div>
+      <div class="card-body" id="shop-body"><div class="empty-msg">No items added yet</div></div>
+    </div>
+
+    <!-- SCRIPTURE -->
+    <div class="card scripture-card">
+      <div class="card-title">Daily Scripture — NLT</div>
+      <div class="card-body">
+        <div class="scripture-text" id="scrip-text">Loading...</div>
+        <div class="scripture-ref" id="scrip-ref"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="motto"><span>The Brecht Standard:</span> We don't do half the job. We don't wait to be asked twice. We take care of each other.</div>
+    <div class="updated" id="updated">Lambertville, MI</div>
+  </div>
+
+</div>
+<script>
+// ── CONFIG ───────────────────────────────────────────────────────────────────
+const CAL_ID  = "c7b135637ea04a4c07405302ca68b2402c2d0b088190cbed5c3e73cc10c4a517@group.calendar.google.com";
+const CAL_KEY = "AIzaSyAOqDTluGphnZFZ1QO673gauvMFsvJMIds";
+const LAT = 41.7736, LON = -83.6274; // Lambertville, MI
+
+// ── PERSON COLORS ─────────────────────────────────────────────────────────────
+function personColor(s) {
+  s = (s||'').toLowerCase();
+  if(s.includes('kevin'))   return '#4A9ECD';
+  if(s.includes('emily'))   return '#27AE60';
+  if(s.includes('addison')) return '#9B59B6';
+  if(s.includes('jonas'))   return '#E67E22';
+  if(s.includes('maci'))    return '#16A085';
+  if(s.includes('roman'))   return '#E74C3C';
+  if(s.includes('piper'))   return '#F39C12';
+  return '#C8922A';
+}
+
+// ── CLOCK ────────────────────────────────────────────────────────────────────
+function tick() {
+  const n = new Date();
+  let h = n.getHours(), m = String(n.getMinutes()).padStart(2,'0');
+  const ap = h >= 12 ? 'PM' : 'AM';
+  h = h%12||12;
+  document.getElementById('clock').textContent = h+':'+m;
+  document.getElementById('ampm').textContent = ap;
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const mos=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('hdate').textContent = days[n.getDay()]+', '+mos[n.getMonth()]+' '+n.getDate()+', '+n.getFullYear();
+}
+setInterval(tick,1000); tick();
+
+// ── WEATHER ──────────────────────────────────────────────────────────────────
+function wCode(c) {
+  if(c===0)return'Clear Sky'; if(c<=2)return'Partly Cloudy'; if(c===3)return'Overcast';
+  if(c<=49)return'Foggy'; if(c<=59)return'Drizzle'; if(c<=69)return'Rain';
+  if(c<=79)return'Snow'; if(c<=82)return'Rain Showers'; if(c>=95)return'Thunderstorm';
+  return'Variable';
+}
+async function loadWeather() {
+  try {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m&temperature_unit=fahrenheit&windspeed_unit=mph`);
+    const d = await r.json();
+    const cur = d.current;
+    document.getElementById('wtemp').textContent   = Math.round(cur.temperature_2m)+'°F';
+    document.getElementById('wdesc').textContent   = wCode(cur.weathercode);
+    document.getElementById('wdetail').textContent = `Wind ${Math.round(cur.windspeed_10m)} mph · Humidity ${cur.relative_humidity_2m}%`;
+  } catch(e) {
+    document.getElementById('wdesc').textContent = 'Weather unavailable';
+  }
+}
+loadWeather(); setInterval(loadWeather,10*60*1000);
+
+// ── CALENDAR ─────────────────────────────────────────────────────────────────
+async function loadCalendar() {
+  const body = document.getElementById('cal-body');
+  try {
+    const now = new Date();
+    const tMin = new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0).toISOString();
+    const tMax = new Date(now.getFullYear(),now.getMonth(),now.getDate(),23,59,59).toISOString();
+    const url  = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CAL_ID)}/events?key=${CAL_KEY}&timeMin=${tMin}&timeMax=${tMax}&singleEvents=true&orderBy=startTime&maxResults=20`;
+    const res  = await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status+' — '+await res.text());
+    const data = await res.json();
+    const evs  = data.items||[];
+    if(!evs.length) { body.innerHTML='<div class="empty-msg">Nothing scheduled today — enjoy the day!</div>'; return; }
+    body.innerHTML = evs.map(ev=>{
+      const sum = ev.summary||'Event';
+      const col = personColor(sum);
+      let t = 'All day';
+      if(ev.start&&ev.start.dateTime) {
+        const d=new Date(ev.start.dateTime);
+        let h=d.getHours(),m=String(d.getMinutes()).padStart(2,'0'),ap=h>=12?'pm':'am';
+        h=h%12||12; t=h+':'+m+ap;
+      }
+      const loc = ev.location?`<div class="event-loc">${ev.location.split(',')[0]}</div>`:'';
+      return `<div class="event-row">
+        <div class="event-dot" style="background:${col}"></div>
+        <div class="event-time">${t}</div>
+        <div><div class="event-name">${sum}</div>${loc}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    body.innerHTML = `<div class="err">Calendar error: ${e.message}<br>Make sure the calendar is set to public in Google Calendar settings.</div>`;
+  }
+}
+loadCalendar(); setInterval(loadCalendar,5*60*1000);
+
+// ── SCRIPTURE ─────────────────────────────────────────────────────────────────
+const VERSES=[
+  {t:"Trust in the Lord with all your heart; do not depend on your own understanding. Seek his will in all you do, and he will show you which path to take.",r:"Proverbs 3:5-6"},
+  {t:"For I know the plans I have for you, says the Lord. They are plans for good and not for disaster, to give you a future and a hope.",r:"Jeremiah 29:11"},
+  {t:"Don't be afraid, for I am with you. Don't be discouraged, for I am your God. I will strengthen you and help you.",r:"Isaiah 41:10"},
+  {t:"And we know that God causes everything to work together for the good of those who love God and are called according to his purpose for them.",r:"Romans 8:28"},
+  {t:"I can do everything through Christ, who gives me strength.",r:"Philippians 4:13"},
+  {t:"Be strong and courageous! Do not be afraid or discouraged. For the Lord your God is with you wherever you go.",r:"Joshua 1:9"},
+  {t:"Give all your worries and cares to God, for he cares about you.",r:"1 Peter 5:7"},
+  {t:"Children are a gift from the Lord; they are a reward from him.",r:"Psalm 127:3"},
+  {t:"Direct your children onto the right path, and when they are older, they will not leave it.",r:"Proverbs 22:6"},
+  {t:"No, despite all these things, overwhelming victory is ours through Christ, who loved us.",r:"Romans 8:37"},
+  {t:"The Lord is my shepherd; I have all that I need.",r:"Psalm 23:1"},
+  {t:"Commit your actions to the Lord, and your plans will succeed.",r:"Proverbs 16:3"},
+  {t:"Don't worry about anything; instead, pray about everything. Tell God what you need, and thank him for all he has done.",r:"Philippians 4:6"},
+  {t:"Above all else, guard your heart, for everything you do flows from it.",r:"Proverbs 4:23"},
+  {t:"God is our refuge and strength, always ready to help in times of trouble.",r:"Psalm 46:1"},
+  {t:"The Spirit God gave us does not make us timid, but gives us power, love and self-discipline.",r:"2 Timothy 1:7"},
+  {t:"He gives power to the weak and strength to the powerless.",r:"Isaiah 40:29"},
+  {t:"We love each other because he loved us first.",r:"1 John 4:19"},
+  {t:"Be kind to each other, tenderhearted, forgiving one another, just as God through Christ has forgiven you.",r:"Ephesians 4:32"},
+  {t:"Work willingly at whatever you do, as though you were working for the Lord rather than for people.",r:"Colossians 3:23"},
+  {t:"Seek the Kingdom of God above all else, and live righteously, and he will give you everything you need.",r:"Matthew 6:33"},
+  {t:"Let all that I am praise the Lord; may I never forget the good things he does for me.",r:"Psalm 103:2"},
+  {t:"Even when I walk through the darkest valley, I will not be afraid, for you are close beside me.",r:"Psalm 23:4"},
+  {t:"The Lord himself will fight for you. Just stay calm.",r:"Exodus 14:14"},
+  {t:"A cheerful heart is good medicine, but a broken spirit saps a person's strength.",r:"Proverbs 17:22"},
+  {t:"Taste and see that the Lord is good. Oh, the joys of those who take refuge in him!",r:"Psalm 34:8"},
+  {t:"The Lord is close to the brokenhearted; he rescues those whose spirits are crushed.",r:"Psalm 34:18"},
+  {t:"As iron sharpens iron, so a friend sharpens a friend.",r:"Proverbs 27:17"},
+  {t:"The Lord makes firm the steps of the one who delights in him.",r:"Psalm 37:23"},
+  {t:"Create in me a clean heart, O God. Renew a loyal spirit within me.",r:"Psalm 51:10"},
+  {t:"So do not throw away this confident trust in the Lord. Remember the great reward it brings you!",r:"Hebrews 10:35"},
+  {t:"The Lord your God is living among you. He is a mighty savior. He will take delight in you with gladness.",r:"Zephaniah 3:17"},
+  {t:"Fix your thoughts on what is true, and honorable, and right, and pure, and lovely, and admirable.",r:"Philippians 4:8"},
+  {t:"So be strong and courageous, all you who put your hope in the Lord!",r:"Psalm 31:24"},
+  {t:"For the Lord your God is the one who goes with you to fight for you against your enemies to give you victory.",r:"Deuteronomy 20:4"},
+  {t:"The Lord your God will personally go ahead of you. He will neither fail you nor abandon you.",r:"Deuteronomy 31:6"},
+  {t:"This is the day the Lord has made. We will rejoice and be glad in it.",r:"Psalm 118:24"},
+];
+(function(){
+  const n=new Date();
+  const doy=Math.floor((n-new Date(n.getFullYear(),0,0))/86400000);
+  const v=VERSES[doy%VERSES.length];
+  document.getElementById('scrip-text').textContent='\u201C'+v.t+'\u201D';
+  document.getElementById('scrip-ref').textContent='\u2014 '+v.r+' NLT';
+})();
+
+// ── MEAL + SHOPPING ───────────────────────────────────────────────────────────
+function loadMeal(){
+  document.getElementById('meal-name').textContent = localStorage.getItem('brecht_meal')||'Not set yet';
+  document.getElementById('meal-note').textContent = localStorage.getItem('brecht_meal_note')||'Update via admin panel on your phone';
+}
+function loadShopping(){
+  const body=document.getElementById('shop-body');
+  const items=JSON.parse(localStorage.getItem('brecht_shopping')||'[]');
+  if(!items.length){body.innerHTML='<div class="empty-msg">No items — add from admin panel</div>';return;}
+  body.innerHTML=items.map(i=>{
+    const cls=i.store==='Costco'?'s-costco':i.store==='Kroger'?'s-kroger':'s-sams';
+    return `<div class="shop-item"><span class="shop-badge ${cls}">${i.store}</span><span>${i.name}</span></div>`;
+  }).join('');
+}
+function loadUpdated(){
+  const ts=localStorage.getItem('brecht_last_updated');
+  if(ts) document.getElementById('updated').textContent='Updated '+new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+loadMeal(); loadShopping(); loadUpdated();
+setInterval(()=>{loadMeal();loadShopping();loadUpdated();},30000);
+</script>
+</body>
+</html>
