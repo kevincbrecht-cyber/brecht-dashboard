@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brecht Dashboard Admin</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0D1F35;color:#fff;min-height:100vh;padding:18px}
+h1{font-size:20px;color:#C8922A;margin-bottom:3px}
+.sub{font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:22px}
+.section{margin-bottom:26px}
+.section h2{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#C8922A;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(200,146,42,0.3)}
+label{display:block;font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:3px;margin-top:8px}
+input,select{width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(200,146,42,0.25);border-radius:8px;color:#fff;font-size:15px;padding:10px 12px;outline:none;-webkit-appearance:none}
+input:focus,select:focus{border-color:#C8922A}
+select option{background:#0D1F35}
+.btn{background:#C8922A;color:#0D1F35;border:none;border-radius:8px;font-size:15px;font-weight:700;padding:12px;width:100%;cursor:pointer;margin-top:10px}
+.btn:active{opacity:.85}
+.btn-sm{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.15);border-radius:6px;font-size:12px;padding:5px 10px;cursor:pointer}
+.btn-danger{background:rgba(255,80,80,0.1);color:#FF8080;border:1px solid rgba(255,80,80,0.2);border-radius:8px;font-size:13px;padding:9px;width:100%;cursor:pointer;margin-top:6px}
+.add-row{display:flex;gap:8px;margin-top:8px}
+.add-row input{flex:1;margin:0}
+.add-row select{width:100px;flex-shrink:0;margin:0}
+.add-btn{background:#C8922A;color:#0D1F35;border:none;border-radius:8px;font-weight:700;font-size:20px;width:44px;flex-shrink:0;cursor:pointer}
+.item-row{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.05);border-radius:7px;padding:7px 10px;margin-top:5px}
+.ibadge{font-size:9px;padding:2px 6px;border-radius:8px;font-weight:600;flex-shrink:0}
+.ic{background:rgba(255,60,60,0.2);color:#FF9090}
+.ik{background:rgba(39,174,96,0.2);color:#7FD4A8}
+.is{background:rgba(74,158,205,0.2);color:#7FC8E8}
+.iname{flex:1;font-size:13px}
+.idel{background:none;border:none;color:rgba(255,255,255,0.3);font-size:18px;cursor:pointer;padding:0 4px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#27AE60;color:#fff;padding:9px 20px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.divider{height:1px;background:rgba(255,255,255,0.07);margin:6px 0}
+</style>
+</head>
+<body>
+<h1>Brecht Dashboard</h1>
+<div class="sub">Changes appear on the kitchen TV within 30 seconds</div>
+
+<div class="section">
+  <h2>🍽 Meals</h2>
+  <label>Tonight's dinner</label>
+  <input type="text" id="meal-tonight" placeholder="e.g. Smashburgers + sweet potato wedges">
+  <label>Alternative / note (optional)</label>
+  <input type="text" id="meal-alt" placeholder="e.g. Or BBQ chicken sandwiches">
+  <div class="divider"></div>
+  <label>Tomorrow's dinner</label>
+  <input type="text" id="meal-tomorrow" placeholder="e.g. Tacos">
+  <button class="btn" onclick="saveMeals()">Save Meals</button>
+</div>
+
+<div class="section">
+  <h2>🛒 Shopping List</h2>
+  <div class="add-row">
+    <input type="text" id="shop-input" placeholder="Item to pick up..." onkeydown="if(event.key==='Enter')addItem()">
+    <select id="shop-store">
+      <option>Costco</option>
+      <option>Kroger</option>
+      <option>Sam's</option>
+    </select>
+    <button class="add-btn" onclick="addItem()">+</button>
+  </div>
+  <div id="shop-list"></div>
+  <button class="btn-danger" onclick="clearShopping()">Clear all items</button>
+</div>
+
+<div class="toast" id="toast">Saved!</div>
+
+<script>
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+function saveMeals(){
+  const tn=document.getElementById('meal-tonight').value.trim();
+  const alt=document.getElementById('meal-alt').value.trim();
+  const tom=document.getElementById('meal-tomorrow').value.trim();
+  if(!tn&&!tom){toast('Enter at least one meal');return;}
+  if(tn)localStorage.setItem('brecht_meal',tn);
+  if(alt)localStorage.setItem('brecht_meal_alt',alt);
+  else localStorage.removeItem('brecht_meal_alt');
+  if(tom)localStorage.setItem('brecht_meal_tomorrow',tom);
+  localStorage.setItem('brecht_last_updated',new Date().toISOString());
+  toast('Meals saved!');
+}
+function getItems(){return JSON.parse(localStorage.getItem('brecht_shopping')||'[]');}
+function saveItems(items){
+  localStorage.setItem('brecht_shopping',JSON.stringify(items));
+  localStorage.setItem('brecht_last_updated',new Date().toISOString());
+  renderItems();
+}
+function addItem(){
+  const name=document.getElementById('shop-input').value.trim();
+  const store=document.getElementById('shop-store').value;
+  if(!name)return;
+  const items=getItems(); items.push({name,store});
+  saveItems(items);
+  document.getElementById('shop-input').value='';
+  toast('Added!');
+}
+function removeItem(i){const items=getItems();items.splice(i,1);saveItems(items);}
+function clearShopping(){if(confirm('Clear all items?')){localStorage.removeItem('brecht_shopping');renderItems();toast('Cleared');}}
+function renderItems(){
+  const items=getItems();
+  const list=document.getElementById('shop-list');
+  if(!items.length){list.innerHTML='<div style="color:rgba(255,255,255,0.3);font-size:12px;margin-top:8px">No items yet</div>';return;}
+  list.innerHTML=items.map((item,i)=>{
+    const cls=item.store==='Costco'?'ic':item.store==='Kroger'?'ik':'is';
+    return`<div class="item-row"><span class="ibadge ${cls}">${item.store}</span><span class="iname">${item.name}</span><button class="idel" onclick="removeItem(${i})">×</button></div>`;
+  }).join('');
+}
+// Pre-fill
+document.getElementById('meal-tonight').value=localStorage.getItem('brecht_meal')||'';
+document.getElementById('meal-alt').value=localStorage.getItem('brecht_meal_alt')||'';
+document.getElementById('meal-tomorrow').value=localStorage.getItem('brecht_meal_tomorrow')||'';
+renderItems();
+</script>
+</body>
+</html>
