@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brecht Family Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  /* Background layers — warm linen / shiplap tones */
+  --bg:         #F4F1EC;
+  --bg-card:    #FFFFFF;
+  --bg-card-2:  #EEF0F3;
+  --bg-accent:  #E8EEF5;
+
+  /* Slate blue — the stone */
+  --slate:      #5B7FA6;
+  --slate-md:   #4A6B8F;
+  --slate-lt:   #D0DCE9;
+  --slate-xlt:  #EBF0F7;
+
+  /* Copper/amber — the wood */
+  --copper:     #A0622A;
+  --copper-lt:  #F0E4D4;
+
+  /* Text */
+  --text:       #2C2C2A;
+  --text-md:    #4A4A46;
+  --text-muted: #7A7A74;
+  --text-light: #A0A09A;
+
+  /* Borders */
+  --border:     rgba(91,127,166,0.15);
+  --border-md:  rgba(91,127,166,0.25);
+}
+
+html{background:var(--bg)}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  padding:16px 20px 20px;
+}
+
+/* ── TOP BAR ── */
+.topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin-bottom:10px}
+.family-name{font-family:'Playfair Display',serif;font-size:clamp(18px,2.5vw,26px);font-weight:700;color:var(--slate-md);line-height:1}
+.hdate{font-size:clamp(9px,1.2vw,12px);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.clock{font-family:'Playfair Display',serif;font-size:clamp(36px,5vw,52px);font-weight:400;color:var(--text);line-height:1;text-align:center}
+.ampm{font-size:clamp(10px,1.2vw,13px);color:var(--text-muted);text-align:center;letter-spacing:.1em;text-transform:uppercase}
+.weather-wrap{text-align:right}
+.wtemp{font-family:'Playfair Display',serif;font-size:clamp(22px,3vw,32px);color:var(--slate-md);line-height:1}
+.wdesc{font-size:clamp(9px,1.1vw,12px);color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.wdetail{font-size:clamp(8px,1vw,11px);color:var(--text-light);margin-top:1px}
+
+/* ── RULES ── */
+.rule{height:1px;background:linear-gradient(to right,transparent,var(--slate),transparent);opacity:.3;margin:8px 0}
+
+/* ── SCRIPTURE ── */
+.scrip-bar{display:flex;align-items:center;gap:10px;padding:5px 0;background:var(--slate-xlt);border-radius:8px;padding:8px 14px}
+.scrip-label{font-size:clamp(8px,1vw,10px);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-md);flex-shrink:0}
+.scrip-text{font-family:'Playfair Display',serif;font-size:clamp(11px,1.4vw,14px);font-style:italic;color:var(--text-md);flex:1;line-height:1.4}
+.scrip-ref{font-size:clamp(9px,1vw,11px);color:var(--copper);font-weight:600;flex-shrink:0;white-space:nowrap}
+
+/* ── SLIDE NAV ── */
+.slide-nav{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 0}
+.snav-btn{background:var(--bg-card);border:1px solid var(--border-md);color:var(--text-muted);border-radius:20px;padding:5px 16px;font-size:clamp(9px,1.1vw,12px);font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s}
+.snav-btn.active{background:var(--slate);color:#FFFFFF;border-color:var(--slate)}
+.snav-btn:hover{border-color:var(--slate);color:var(--slate)}
+
+/* ── SLIDES ── */
+.slide{display:none}
+.slide.active{display:block}
+.grid3{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:12px}
+
+/* ── CARDS ── */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:13px 15px;box-shadow:0 1px 4px rgba(91,127,166,0.07)}
+.card-title{font-size:clamp(8px,1vw,10px);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--slate-md);padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:8px}
+
+/* ── EVENTS ── */
+.ev-row{display:flex;align-items:flex-start;gap:7px;padding:5px 0;border-bottom:1px solid var(--border)}
+.ev-row:last-child{border-bottom:none}
+.ev-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.ev-time{font-size:clamp(9px,1.1vw,11px);color:var(--text-muted);width:55px;flex-shrink:0}
+.ev-name{font-size:clamp(11px,1.4vw,13px);font-weight:500;color:var(--text);line-height:1.35}
+.ev-loc{font-size:clamp(8px,1vw,10px);color:var(--text-light);margin-top:1px}
+.empty{font-size:clamp(10px,1.2vw,12px);color:var(--text-light);font-style:italic;padding:6px 0}
+
+/* ── MEAL ── */
+.meal-box{background:var(--copper-lt);border:1px solid rgba(160,98,42,0.2);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.meal-lbl{font-size:clamp(8px,1vw,9px);letter-spacing:.1em;text-transform:uppercase;color:var(--copper);margin-bottom:2px;font-weight:600}
+.meal-name{font-family:'Playfair Display',serif;font-size:clamp(14px,1.8vw,19px);color:var(--text);line-height:1.2}
+.meal-alt{font-size:clamp(9px,1.1vw,11px);color:var(--text-muted);margin-top:3px}
+
+/* ── WEATHER DETAIL ── */
+.wx-big{font-size:clamp(28px,4vw,44px);text-align:center;font-family:'Playfair Display',serif;color:var(--slate-md);margin:6px 0 2px}
+.wx-cond{text-align:center;font-size:clamp(12px,1.5vw,15px);color:var(--text-md);margin-bottom:6px}
+.wx-feel{text-align:center;font-size:clamp(9px,1.1vw,11px);color:var(--text-muted);margin-bottom:6px}
+.wx-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.wx-box{background:var(--slate-xlt);border:1px solid var(--border);border-radius:8px;padding:7px 10px}
+.wx-lbl{font-size:clamp(8px,1vw,9px);color:var(--slate-md);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;font-weight:600}
+.wx-val{font-size:clamp(13px,1.6vw,16px);font-weight:500;color:var(--text)}
+
+/* ── SHOPPING ── */
+.shop-row{display:flex;align-items:center;gap:6px;font-size:clamp(10px,1.2vw,12px);color:var(--text);padding:4px 0;border-bottom:1px solid var(--border)}
+.shop-row:last-child{border-bottom:none}
+.shop-badge{font-size:clamp(7px,.9vw,9px);padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0}
+.s-costco{background:rgba(200,50,50,0.1);color:#B03030}
+.s-kroger{background:rgba(39,130,80,0.1);color:#277850}
+.s-sams{background:rgba(91,127,166,0.15);color:var(--slate-md)}
+
+/* ── PERSON SECTIONS ── */
+.psec{margin-bottom:10px}
+.psec:last-child{margin-bottom:0}
+.phdr{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.pdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pname{font-size:clamp(9px,1.1vw,11px);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text)}
+.pitem{font-size:clamp(10px,1.2vw,12px);color:var(--text-md);padding:2px 0 2px 14px;border-bottom:1px solid var(--border);position:relative;line-height:1.4}
+.pitem:last-child{border-bottom:none}
+.pitem.chore::before{content:'☐';position:absolute;left:0;color:var(--slate);font-size:10px;top:3px}
+.pitem.workout::before{content:'▸';position:absolute;left:0;color:var(--copper);font-size:10px;top:3px}
+
+/* ── FOOTER ── */
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:12px}
+.motto{font-size:clamp(9px,1.1vw,11px);color:var(--text-muted);font-style:italic}
+.motto span{color:var(--slate-md);font-style:normal;font-weight:600}
+.updated{font-size:clamp(8px,1vw,10px);color:var(--text-light);text-align:right;white-space:nowrap}
+
+.err{font-size:11px;color:#B03030;font-style:italic}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="family-name">The Brecht Family</div>
+    <div class="hdate" id="hdate"></div>
+  </div>
+  <div>
+    <div class="clock" id="clock">--:--</div>
+    <div class="ampm" id="ampm">--</div>
+  </div>
+  <div class="weather-wrap">
+    <div class="wtemp" id="wtemp">--°F</div>
+    <div class="wdesc" id="wdesc">Loading...</div>
+    <div class="wdetail" id="wdetail"></div>
+  </div>
+</div>
+
+<div class="rule"></div>
+
+<!-- SCRIPTURE -->
+<div class="scrip-bar">
+  <div class="scrip-label">Daily Scripture</div>
+  <div class="scrip-text" id="scrip-text">Loading...</div>
+  <div class="scrip-ref" id="scrip-ref"></div>
+</div>
+
+<div class="rule"></div>
+
+<!-- SLIDE NAV -->
+<div class="slide-nav">
+  <button class="snav-btn active" onclick="goSlide(0)">📅 Today</button>
+  <button class="snav-btn" onclick="goSlide(1)">🌤 Tomorrow</button>
+  <button class="snav-btn" onclick="goSlide(2)">🧹 Chores</button>
+  <button class="snav-btn" onclick="goSlide(3)">💪 Workouts</button>
+</div>
+
+<!-- SLIDE 0: TODAY -->
+<div class="slide active" id="slide-0">
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">📅 Today's Schedule</div>
+      <div id="cal-today"><div class="empty">Loading...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🍽 Meals</div>
+      <div class="meal-box">
+        <div class="meal-lbl">Tonight</div>
+        <div class="meal-name" id="meal-tonight">Not set yet</div>
+        <div class="meal-alt" id="meal-alt"></div>
+      </div>
+      <div class="meal-box">
+        <div class="meal-lbl">Tomorrow</div>
+        <div class="meal-name" id="meal-tomorrow" style="font-size:clamp(13px,1.6vw,17px)">Not set yet</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">☀️ Today's Weather</div>
+      <div id="wx-today"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 1: TOMORROW -->
+<div class="slide" id="slide-1">
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">📅 Tomorrow's Schedule</div>
+      <div id="cal-tomorrow"><div class="empty">Loading...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌤 Tomorrow's Forecast</div>
+      <div id="wx-tomorrow"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🛒 Shopping List</div>
+      <div id="shop-body"><div class="empty">No items yet</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2: CHORES -->
+<div class="slide" id="slide-2">
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">🧹 Addison & Jonas</div>
+      <div id="chores-aj"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🧹 Maci & Roman</div>
+      <div id="chores-mr"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🧹 Piper</div>
+      <div id="chores-p"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: WORKOUTS -->
+<div class="slide" id="slide-3">
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">💪 Kevin & Emily</div>
+      <div id="workout-ke"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏋️ Addison & Jonas</div>
+      <div id="workout-aj"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ Maci, Roman & Piper</div>
+      <div id="workout-mrp"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="rule" style="margin-top:14px"></div>
+<div class="footer">
+  <div class="motto"><span>The Brecht Standard:</span> We don't do half the job. We don't wait to be asked twice. We take care of each other.</div>
+  <div class="updated" id="updated">Lambertville, MI 48144</div>
+</div>
+
+<script>
+const CAL_ID="c7b135637ea04a4c07405302ca68b2402c2d0b088190cbed5c3e73cc10c4a517@group.calendar.google.com";
+const CAL_KEY="AIzaSyAOqDTluGphnZFZ1QO673gauvMFsvJMIds";
+const LAT=41.7736,LON=-83.6274;
+
+function pColor(s){
+  s=(s||'').toLowerCase();
+  if(s.includes('kevin'))return'#4A7FA8';
+  if(s.includes('emily'))return'#3A8A5C';
+  if(s.includes('addison'))return'#7B52A0';
+  if(s.includes('jonas'))return'#C07820';
+  if(s.includes('maci'))return'#2A8070';
+  if(s.includes('roman'))return'#B04030';
+  if(s.includes('piper'))return'#C08020';
+  return'#5B7FA6';
+}
+
+function tick(){
+  const n=new Date();
+  let h=n.getHours(),m=String(n.getMinutes()).padStart(2,'0');
+  const ap=h>=12?'PM':'AM';h=h%12||12;
+  document.getElementById('clock').textContent=h+':'+m;
+  document.getElementById('ampm').textContent=ap;
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const mos=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('hdate').textContent=days[n.getDay()]+', '+mos[n.getMonth()]+' '+n.getDate()+', '+n.getFullYear();
+}
+setInterval(tick,1000);tick();
+
+function wDesc(c){
+  if(c===0)return'☀️ Clear';if(c<=2)return'⛅ Partly Cloudy';if(c===3)return'☁️ Overcast';
+  if(c<=49)return'🌫 Foggy';if(c<=59)return'🌦 Drizzle';if(c<=69)return'🌧 Rain';
+  if(c<=79)return'❄️ Snow';if(c<=82)return'🌦 Showers';if(c>=95)return'⛈ Thunderstorm';
+  return'🌡 Variable';
+}
+async function loadWeather(){
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,weathercode,windspeed_10m,relative_humidity_2m,apparent_temperature&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=America%2FDetroit&forecast_days=2`);
+    const d=await r.json();
+    const cur=d.current,tod=d.daily;
+    document.getElementById('wtemp').textContent=Math.round(cur.temperature_2m)+'°F';
+    document.getElementById('wdesc').textContent=wDesc(cur.weathercode).replace(/^\S+\s/,'');
+    document.getElementById('wdetail').textContent=`Feels ${Math.round(cur.apparent_temperature)}° · Wind ${Math.round(cur.windspeed_10m)}mph · Humidity ${cur.relative_humidity_2m}%`;
+
+    function wxCard(temp,desc,hi,lo,rain,wind,feels=''){
+      return`<div class="wx-big">${temp}°F</div>
+      <div class="wx-cond">${desc}</div>
+      ${feels?`<div class="wx-feel">Feels like ${feels}°F</div>`:''}
+      <div class="wx-grid">
+        <div class="wx-box"><div class="wx-lbl">High / Low</div><div class="wx-val">${hi}° / ${lo}°</div></div>
+        <div class="wx-box"><div class="wx-lbl">Rain Chance</div><div class="wx-val">${rain}%</div></div>
+        <div class="wx-box"><div class="wx-lbl">Wind</div><div class="wx-val">${wind} mph</div></div>
+        <div class="wx-box"><div class="wx-lbl">Humidity</div><div class="wx-val">${cur.relative_humidity_2m}%</div></div>
+      </div>`;
+    }
+    document.getElementById('wx-today').innerHTML=wxCard(
+      Math.round(cur.temperature_2m),wDesc(cur.weathercode),
+      Math.round(tod.temperature_2m_max[0]),Math.round(tod.temperature_2m_min[0]),
+      tod.precipitation_probability_max[0],Math.round(cur.windspeed_10m),
+      Math.round(cur.apparent_temperature)
+    );
+    document.getElementById('wx-tomorrow').innerHTML=wxCard(
+      Math.round(tod.temperature_2m_max[1]),wDesc(tod.weathercode[1]),
+      Math.round(tod.temperature_2m_max[1]),Math.round(tod.temperature_2m_min[1]),
+      tod.precipitation_probability_max[1],Math.round(tod.windspeed_10m_max[1])
+    );
+  }catch(e){document.getElementById('wdesc').textContent='Unavailable';}
+}
+loadWeather();setInterval(loadWeather,10*60*1000);
+
+async function loadCalendar(){
+  async function getEvs(date){
+    const tMin=new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,0,0).toISOString();
+    const tMax=new Date(date.getFullYear(),date.getMonth(),date.getDate(),23,59,59).toISOString();
+    const res=await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(CAL_ID)}/events?key=${CAL_KEY}&timeMin=${tMin}&timeMax=${tMax}&singleEvents=true&orderBy=startTime&maxResults=15`);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    return(await res.json()).items||[];
+  }
+  function render(evs,id){
+    const el=document.getElementById(id);
+    if(!evs.length){el.innerHTML='<div class="empty">Nothing scheduled — enjoy the day!</div>';return;}
+    el.innerHTML=evs.map(ev=>{
+      const sum=ev.summary||'Event',col=pColor(sum);
+      let t='All day';
+      if(ev.start&&ev.start.dateTime){
+        const d=new Date(ev.start.dateTime);
+        let h=d.getHours(),m=String(d.getMinutes()).padStart(2,'0'),ap=h>=12?'pm':'am';
+        h=h%12||12;t=h+':'+m+ap;
+      }
+      const loc=ev.location?`<div class="ev-loc">${ev.location.split(',')[0]}</div>`:'';
+      return`<div class="ev-row"><div class="ev-dot" style="background:${col}"></div><div class="ev-time">${t}</div><div><div class="ev-name">${sum}</div>${loc}</div></div>`;
+    }).join('');
+  }
+  try{
+    const now=new Date(),tom=new Date(now);tom.setDate(tom.getDate()+1);
+    const[te,tme]=await Promise.all([getEvs(now),getEvs(tom)]);
+    render(te,'cal-today');render(tme,'cal-tomorrow');
+  }catch(e){
+    ['cal-today','cal-tomorrow'].forEach(id=>document.getElementById(id).innerHTML=`<div class="err">Calendar error: ${e.message}</div>`);
+  }
+}
+loadCalendar();setInterval(loadCalendar,5*60*1000);
+
+const V=[
+  {t:"Trust in the Lord with all your heart; do not depend on your own understanding. Seek his will in all you do, and he will show you which path to take.",r:"Proverbs 3:5-6"},
+  {t:"For I know the plans I have for you, says the Lord. They are plans for good and not for disaster, to give you a future and a hope.",r:"Jeremiah 29:11"},
+  {t:"Don't be afraid, for I am with you. Don't be discouraged, for I am your God. I will strengthen you and help you.",r:"Isaiah 41:10"},
+  {t:"And we know that God causes everything to work together for the good of those who love God and are called according to his purpose.",r:"Romans 8:28"},
+  {t:"I can do everything through Christ, who gives me strength.",r:"Philippians 4:13"},
+  {t:"Be strong and courageous! Do not be afraid or discouraged. For the Lord your God is with you wherever you go.",r:"Joshua 1:9"},
+  {t:"Give all your worries and cares to God, for he cares about you.",r:"1 Peter 5:7"},
+  {t:"Children are a gift from the Lord; they are a reward from him.",r:"Psalm 127:3"},
+  {t:"Direct your children onto the right path, and when they are older, they will not leave it.",r:"Proverbs 22:6"},
+  {t:"No, despite all these things, overwhelming victory is ours through Christ, who loved us.",r:"Romans 8:37"},
+  {t:"The Lord is my shepherd; I have all that I need.",r:"Psalm 23:1"},
+  {t:"Commit your actions to the Lord, and your plans will succeed.",r:"Proverbs 16:3"},
+  {t:"Don't worry about anything; instead, pray about everything. Tell God what you need.",r:"Philippians 4:6"},
+  {t:"Above all else, guard your heart, for everything you do flows from it.",r:"Proverbs 4:23"},
+  {t:"God is our refuge and strength, always ready to help in times of trouble.",r:"Psalm 46:1"},
+  {t:"He gives power to the weak and strength to the powerless.",r:"Isaiah 40:29"},
+  {t:"We love each other because he loved us first.",r:"1 John 4:19"},
+  {t:"Be kind to each other, tenderhearted, forgiving one another, just as God through Christ has forgiven you.",r:"Ephesians 4:32"},
+  {t:"Work willingly at whatever you do, as though you were working for the Lord rather than for people.",r:"Colossians 3:23"},
+  {t:"Seek the Kingdom of God above all else, and live righteously, and he will give you everything you need.",r:"Matthew 6:33"},
+  {t:"Let all that I am praise the Lord; may I never forget the good things he does for me.",r:"Psalm 103:2"},
+  {t:"Even when I walk through the darkest valley, I will not be afraid, for you are close beside me.",r:"Psalm 23:4"},
+  {t:"The Lord himself will fight for you. Just stay calm.",r:"Exodus 14:14"},
+  {t:"A cheerful heart is good medicine, but a broken spirit saps a person's strength.",r:"Proverbs 17:22"},
+  {t:"Taste and see that the Lord is good. Oh, the joys of those who take refuge in him!",r:"Psalm 34:8"},
+  {t:"The Lord is close to the brokenhearted; he rescues those whose spirits are crushed.",r:"Psalm 34:18"},
+  {t:"As iron sharpens iron, so a friend sharpens a friend.",r:"Proverbs 27:17"},
+  {t:"The Lord makes firm the steps of the one who delights in him.",r:"Psalm 37:23"},
+  {t:"Create in me a clean heart, O God. Renew a loyal spirit within me.",r:"Psalm 51:10"},
+  {t:"This is the day the Lord has made. We will rejoice and be glad in it.",r:"Psalm 118:24"},
+  {t:"The Lord will guide you continually, giving you water when you are dry and restoring your strength.",r:"Isaiah 58:11"},
+  {t:"So be strong and courageous, all you who put your hope in the Lord!",r:"Psalm 31:24"},
+  {t:"Fix your thoughts on what is true, honorable, right, pure, lovely, and admirable.",r:"Philippians 4:8"},
+  {t:"The Spirit God gave us does not make us timid, but gives us power, love and self-discipline.",r:"2 Timothy 1:7"},
+  {t:"For the Lord your God is the one who goes with you to fight for you against your enemies.",r:"Deuteronomy 20:4"},
+  {t:"The Lord your God will personally go ahead of you. He will neither fail you nor abandon you.",r:"Deuteronomy 31:6"},
+  {t:"So do not throw away this confident trust in the Lord. Remember the great reward it brings you!",r:"Hebrews 10:35"},
+];
+(function(){
+  const n=new Date(),doy=Math.floor((n-new Date(n.getFullYear(),0,0))/86400000),v=V[doy%V.length];
+  document.getElementById('scrip-text').textContent='\u201C'+v.t+'\u201D';
+  document.getElementById('scrip-ref').textContent='\u2014 '+v.r+' NLT';
+})();
+
+const CHORES={
+  addison:["Load AND unload the dishwasher","Wipe kitchen counter + table after meals","Wipe microwave inside + out","Vacuum entire house (weekly)","Deep clean main bathroom (weekly)"],
+  jonas:  ["Feed both dogs (morning)","Take out garbage + replace bag","Wipe kitchen counter + table","Tidy backyard — balls + toys (weekly)","Deep clean main bathroom (weekly)"],
+  maci:   ["Sweep kitchen floor after dinner","Sort laundry into piles (weekly)","Put away YOUR folded laundry","Tidy backyard — equipment (weekly)"],
+  roman:  ["Pick up dog poop in backyard","Tidy living room + family room","Wipe kids bathroom sink + counter","Deep clean kids bathroom (weekly)","Tidy front yard (weekly)"],
+  piper:  ["Tidy living room + family room","Wipe kids bathroom sink + counter","Tidy front yard — bikes + toys","Dust living room surfaces (Saturday)","Put away YOUR folded laundry"],
+};
+function psec(name,color,items,type){
+  return`<div class="psec"><div class="phdr"><div class="pdot" style="background:${color}"></div><div class="pname">${name}</div></div>${items.map(i=>`<div class="pitem ${type}">${i}</div>`).join('')}</div>`;
+}
+document.getElementById('chores-aj').innerHTML=psec('Addison','#7B52A0',CHORES.addison,'chore')+psec('Jonas','#C07820',CHORES.jonas,'chore');
+document.getElementById('chores-mr').innerHTML=psec('Maci','#2A8070',CHORES.maci,'chore')+psec('Roman','#B04030',CHORES.roman,'chore');
+document.getElementById('chores-p').innerHTML=psec('Piper','#C08020',CHORES.piper,'chore');
+
+const W={
+  0:{kevin:['Full rest — family day'],ek:'Rest Day',emily:['Full rest — family day'],ee:'Rest Day',addison:['Light swim or walk','Foam roll + stretch'],ea:'Active Rest',jonas:['Rest — stay active with neighborhood'],ej:'Rest Day',maci:['Active play with friends'],em:'Rest Day',roman:['Neighborhood play — stay active'],er:'Active Rest',piper:['Neighborhood + active play'],ep:'Free Play'},
+  1:{kevin:['Bench press 4×6-8','Incline DB press 3×10-12','Seated shoulder press 3×10-12','Lateral raises 3×15','Tricep pushdown 3×12-15','15 min incline treadmill'],ek:'Upper Push — YMCA',emily:['Goblet squat 3×12','DB Romanian deadlift 3×12','Leg press 3×15','Shoulder press 3×12','Plank 3×40s','10 min incline walk'],ee:'Full Body A — YMCA 5am',addison:['7am family workout','Dryland: swim bands 4×15','Lat pulldown 3×12','Flutter kicks 3×30s'],ea:'7am + Dryland Swim',jonas:['7am family workout with Dad','Push-ups: 4×5 knee + 3×3 full','Plank: 3×70s','5pm: 3×max + grease groove'],ej:'7am + 5pm Solo',maci:['7am family workout','2pm: Hollow body hold 4×30s','Bridge hold 3×30s','Shoulder taps 3×15'],em:'7am + Tumbling',roman:['7am: Jacks, squats, push-ups, plank','5pm: Cone drills 5×','Lateral shuffles 3×10s','Sprint bursts 5×20yd'],er:'7am + 5pm Agility',piper:['7am family workout (modified)','1pm: Ball dribbling 5 min','Cone weave 5×','Passing wall 20×'],ep:'7am + Soccer Skills'},
+  2:{kevin:['Romanian deadlift 4×6-8','Leg curl 3×12','Hip thrust 3×10-12','Calf raises 4×15','Plank 3×60s','20 min stationary bike'],ek:'Lower Pull — YMCA',emily:['Swim meet day — rest','Walk 20 min easy if possible'],ee:'Rest Day',addison:['Full breakfast 7am — high protein','Compete in all events','Post-meet recovery stretch'],ea:'Swim Meet Day',jonas:['Full breakfast 7am','Compete — push every event','Rest after meet — no 5pm session'],ej:'Swim Meet Day',maci:['Full breakfast 7am','Compete in all events','Recovery — protein dinner'],em:'Swim Meet Day',roman:['Full breakfast 7am — eggs + bacon','Compete in all events','Rest — no evening agility'],er:'Swim Meet Day',piper:['Full breakfast 7am','Compete in all events','Post-meet snack + rest'],ep:'Swim Meet Day'},
+  3:{kevin:['30 min walk','10 min mobility — hips + thoracic','No gym today'],ek:'Active Recovery',emily:['Lat pulldown 3×12','Cable row 3×12','DB chest press 3×12','Hip thrust 3×15','Curls + triceps 2×15 each','10 min bike'],ee:'Full Body B — YMCA 5am',addison:['7am family workout','Swim practice 11am','Dryland: shoulder press 3×12','Push-ups slow 3×10'],ea:'7am + Dryland',jonas:['7am family workout','Push-ups: 4×8 knee + 3×5 full','Plank: 3×75s','5pm: 3×max full + jog 10 min'],ej:'7am + 5pm Solo',maci:['7am family workout','Swim practice 11am','Cheer practice — 100%','V-ups 3×12'],em:'7am + Cheer',roman:['7am family workout','Swim 10:15am','5pm: Bear crawls 3×10yd','Box jumps 3×8 + sprints 5×20yd'],er:'7am + 5pm Agility',piper:['7am family workout','Swim 10:15am','1pm: Passing wall + shooting'],ep:'7am + Soccer'},
+  4:{kevin:['Barbell row 4×6-8','Lat pulldown 3×10-12','Cable row 3×12','Face pulls 3×15','Curls 3×10-12','15 min incline treadmill'],ek:'Upper Pull — YMCA',emily:['Payroll day — rest','Walk at lunch if possible'],ee:'Rest Day',addison:['7am family workout','Swim 11am — push pace','Dryland: flutter kicks + bands'],ea:'7am + Swim',jonas:['7am family workout','Push-ups: 3×max full','Plank: 3×80s','5pm: Negatives 3×5 + dead hang 3×max'],ej:'7am + 5pm Solo',maci:['7am family workout','Swim 11am','Tumble @ HS Main Gym','Wall handstand 3×20s'],em:'7am + Tumble',roman:['7am family workout','Swim 10:15am','5pm: Lateral shuffles + sprints'],er:'7am + 5pm Agility',piper:['7am family workout','Swim 10:15am','1pm: 1v1 moves — scissors + step-over'],ep:'7am + Soccer'},
+  5:{kevin:['Squat or leg press 4×6-8','Leg extension 3×12-15','Walking lunges 3×12/leg','Calf raise 4×15','Ab wheel 3×12','20 min stationary bike'],ek:'Lower Push — YMCA',emily:['DB walking lunges 3×12/leg','DB bent-over row 3×12','Push-ups 3×max','Leg curl 3×15','Face pulls 3×15','15 min incline walk'],ee:'Full Body C — YMCA 5am',addison:['7am family workout','Swim 11am — speed work','Dryland: shoulder + core finisher'],ea:'7am + Swim Speed',jonas:['7am family workout','Push-ups: 4×max full','Plank: 3×85s','5pm: 60-sec timed test + jog'],ej:'7am + 5pm Solo',maci:['7am family workout','Swim 11am','3pm: Softball — throwing + fielding'],em:'7am + Softball',roman:['7am family workout','Swim 10:15am','5pm: Full agility circuit'],er:'7am + 5pm Agility',piper:['7am family workout','Swim 10:15am','1pm: Sprint drills + dribbling'],ep:'7am + Soccer'},
+  6:{kevin:['Cold plunge 3-5 min (50-59°F)','Let body warm 5-10 min naturally','30 min neighborhood walk'],ek:'Cold Plunge + Walk',emily:['20-30 min walk with Kevin','No gym today'],ee:'Active Rest',addison:['Light walk or easy swim','Foam roll + stretch'],ea:'Active Rest',jonas:['60-sec push-up timed test','Plank: hold to 1:05','1 mile run — track your time'],ej:'Timed Test Day',maci:['Softball: batting + fielding','Tumbling: bridge + hollow body'],em:'Softball + Tumbling',roman:['Neighborhood sports + active play','Football prep mindset — stay moving'],er:'Active Play',piper:['Soccer ball free play','Neighborhood active time'],ep:'Soccer + Play'},
+};
+function renderWorkouts(){
+  const day=new Date().getDay(),w=W[day];
+  document.getElementById('workout-ke').innerHTML=
+    psec('Kevin','#4A7FA8',[`<strong>${w.ek}</strong>`,...w.kevin],'workout')+
+    psec('Emily','#3A8A5C',[`<strong>${w.ee}</strong>`,...w.emily],'workout');
+  document.getElementById('workout-aj').innerHTML=
+    psec('Addison','#7B52A0',[`<strong>${w.ea}</strong>`,...w.addison],'workout')+
+    psec('Jonas','#C07820',[`<strong>${w.ej}</strong>`,...w.jonas],'workout');
+  document.getElementById('workout-mrp').innerHTML=
+    psec('Maci','#2A8070',[`<strong>${w.em}</strong>`,...w.maci],'workout')+
+    psec('Roman','#B04030',[`<strong>${w.er}</strong>`,...w.roman],'workout')+
+    psec('Piper','#C08020',[`<strong>${w.ep}</strong>`,...w.piper],'workout');
+}
+renderWorkouts();
+
+function loadMeals(){
+  document.getElementById('meal-tonight').textContent=localStorage.getItem('brecht_meal')||'Not set yet';
+  const alt=localStorage.getItem('brecht_meal_alt')||'';
+  document.getElementById('meal-alt').textContent=alt?'Or: '+alt:'';
+  document.getElementById('meal-tomorrow').textContent=localStorage.getItem('brecht_meal_tomorrow')||'Not set yet';
+}
+function loadShopping(){
+  const body=document.getElementById('shop-body');
+  const items=JSON.parse(localStorage.getItem('brecht_shopping')||'[]');
+  if(!items.length){body.innerHTML='<div class="empty">No items — add from admin panel</div>';return;}
+  body.innerHTML=items.map(i=>{
+    const cls=i.store==='Costco'?'s-costco':i.store==='Kroger'?'s-kroger':'s-sams';
+    return`<div class="shop-row"><span class="shop-badge ${cls}">${i.store}</span><span>${i.name}</span></div>`;
+  }).join('');
+}
+function loadUpdated(){
+  const ts=localStorage.getItem('brecht_last_updated');
+  if(ts)document.getElementById('updated').textContent='Updated '+new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+}
+loadMeals();loadShopping();loadUpdated();
+setInterval(()=>{loadMeals();loadShopping();loadUpdated();},30000);
+
+let cur=0,timer=null;
+function goSlide(n){
+  document.getElementById('slide-'+cur).classList.remove('active');
+  document.querySelectorAll('.snav-btn')[cur].classList.remove('active');
+  cur=n;
+  document.getElementById('slide-'+cur).classList.add('active');
+  document.querySelectorAll('.snav-btn')[cur].classList.add('active');
+  clearInterval(timer);
+  timer=setInterval(()=>goSlide((cur+1)%4),15000);
+}
+timer=setInterval(()=>goSlide((cur+1)%4),15000);
+</script>
+</body>
+</html>
